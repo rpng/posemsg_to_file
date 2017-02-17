@@ -6,6 +6,6 @@
     <param name="topic_type" value="PoseStamped" type="str" />
   </node>
 
-  <node pkg="rosbag" type="play" name="rosbag" args=" -r 1 --clock $(find Datasets)/rpg_circle_1/data/circle_1_2014-05-16_11-57-39.bag" />
+  <!--<node pkg="rosbag" type="play" name="rosbag" args=" -r 1 &#45;&#45;clock $(find Datasets)/rpg_circle_1/data/circle_1_2014-05-16_11-57-39.bag" />-->
 
 </launch>

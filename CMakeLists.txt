@@ -31,8 +31,13 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   tf
   tf_conversions
-#  vikit_common
-#  vikit_ros
+)
+
+# Describe catkin Project
+catkin_package(
+    DEPENDS Eigen3
+    CATKIN_DEPENDS geometry_msgs nav_msgs roscpp roslib tf tf_conversions
+    INCLUDE_DIRS src
 )
 
 # Enable compile optimizations

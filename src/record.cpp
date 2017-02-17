@@ -115,7 +115,7 @@ namespace {
 int main(int argc, char **argv) {
     // create ros node
     ros::init(argc, argv, "trajectory_recorder");
-    ros::NodeHandle nh;
+    ros::NodeHandle nh("~");
 
     // get parameters to subscribe
     std::string topic;
