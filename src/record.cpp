@@ -36,6 +36,9 @@ public:
     tf::TransformListener tf_listener_;
     Eigen::Quaterniond q_;
     Eigen::Vector3d p_;
+    Eigen::Vector3d Pp_;
+    Eigen::Vector3d Pr_;
+    bool gps_ref_got;
     Eigen::Vector3d gps_ref_;
     double stamp_;
 
@@ -43,12 +46,16 @@ public:
             name(topic_name),
             n_msgs_received_(0),
             invert_pose_(invert_pose),
+            gps_ref_got(false),
             tf_listener_(ros::Duration(100)) {
+        // Set defaults to zero
+        Pp_ = Eigen::Vector3d::Zero();
+        Pr_ = Eigen::Vector3d::Zero();
+        // Setup file
         ofs_.open(filename.c_str());
         if (ofs_.fail())
             throw std::runtime_error("Could not create tracefile. Does folder exist?");
-
-        ofs_ << "# format: timestamp tx ty tz qx qy qz qw" << std::endl;
+        ofs_ << "# format: timestamp tx ty tz qx qy qz qw Ptx Pty Ptz Prx Pry Prz" << std::endl;
     }
 
     ~Recorder() {}
@@ -63,9 +70,11 @@ public:
         ofs_.precision(15);
         ofs_.setf(std::ios::fixed, std::ios::floatfield);
         ofs_ << stamp_ << " ";
-        ofs_.precision(6);
+        ofs_.precision(10);
         ofs_ << p_.x() << " " << p_.y() << " " << p_.z() << " "
-             << q_.x() << " " << q_.y() << " " << q_.z() << " " << q_.w() << std::endl;
+             << q_.x() << " " << q_.y() << " " << q_.z() << " " << q_.w() << " "
+                << Pp_.x() << " " << Pp_.y() << " " << Pp_.z() << " "
+                << Pr_.x() << " " << Pr_.y() << " " << Pr_.z() << " " << std::endl;
 
         if (++n_msgs_received_ % 50 == 0)
             printf("[%s]: Received %i pose messages\n", name.c_str(), n_msgs_received_);
@@ -83,6 +92,8 @@ public:
         q_ = Eigen::Quaterniond(msg->pose.pose.orientation.w, msg->pose.pose.orientation.x,
                                 msg->pose.pose.orientation.y, msg->pose.pose.orientation.z);
         p_ = Eigen::Vector3d(msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z);
+        Pp_ = Eigen::Vector3d(msg->pose.covariance.at(0),msg->pose.covariance.at(7),msg->pose.covariance.at(14));
+        Pr_ = Eigen::Vector3d(msg->pose.covariance.at(21),msg->pose.covariance.at(28),msg->pose.covariance.at(35));
         stamp_ = msg->header.stamp.toSec();
         write();
     }
@@ -116,6 +127,9 @@ public:
     }
 
     void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr &msg) {
+        // Return if we do not have a reference yet
+        if(!gps_ref_got)
+            return;
         // Convert into ENU frame from the Lat, Lon frame
         double xEast, yNorth, zUp;
         GPSConversion::GeodeticToEnu(msg->latitude, msg->longitude, msg->altitude, gps_ref_(0), gps_ref_(1), gps_ref_(2), xEast, yNorth, zUp);
@@ -128,6 +142,7 @@ public:
 
     void gpsRefCallback(const sensor_msgs::NavSatFix::ConstPtr &msg) {
         gps_ref_ = Eigen::Vector3d(msg->latitude, msg->longitude, msg->altitude);
+        gps_ref_got = true;
     }
 
 };

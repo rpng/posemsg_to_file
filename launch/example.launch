@@ -2,9 +2,9 @@
 
   <!-- First estimate -->
   <node pkg="posemsg_to_file" type="posemsg_to_file_node" name="pose2file_estimate" clear_params="true" output="screen">
-    <param name="topic"         value="/toto/pose" type="str" />
+    <param name="topic"         value="/toto/posewithcovariance" type="str" />
     <param name="invert_pose"   value="false" />
-    <param name="topic_type"    value="PoseStamped" type="str" />
+    <param name="topic_type"    value="PoseWithCovarianceStamped" type="str" />
   </node>
 
   <!-- Second ground truth -->
