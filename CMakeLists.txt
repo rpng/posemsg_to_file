@@ -27,6 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
   cmake_modules
   geometry_msgs
   nav_msgs
+  sensor_msgs
   roscpp
   roslib
   tf
@@ -36,7 +37,7 @@ find_package(catkin REQUIRED COMPONENTS
 # Describe catkin Project
 catkin_package(
     DEPENDS Eigen3
-    CATKIN_DEPENDS geometry_msgs nav_msgs roscpp roslib tf tf_conversions
+    CATKIN_DEPENDS geometry_msgs nav_msgs sensor_msgs roscpp roslib tf tf_conversions
     INCLUDE_DIRS src
 )
 

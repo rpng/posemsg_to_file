@@ -1,9 +1,18 @@
 <launch>
 
-  <node pkg="posemsg_to_file" type="posemsg_to_file_node" name="posemsg_to_file" clear_params="true" output="screen">
-    <param name="topic" value="/drdre/optitrack_corrected" type="str" />
-    <param name="invert_pose" value="false" />
-    <param name="topic_type" value="PoseStamped" type="str" />
+  <!-- First estimate -->
+  <node pkg="posemsg_to_file" type="posemsg_to_file_node" name="pose2file_estimate" clear_params="true" output="screen">
+    <param name="topic"         value="/toto/pose" type="str" />
+    <param name="invert_pose"   value="false" />
+    <param name="topic_type"    value="PoseStamped" type="str" />
+  </node>
+
+  <!-- Second ground truth -->
+  <node pkg="posemsg_to_file" type="posemsg_to_file_node" name="pose2file_ground" clear_params="true" output="screen">
+    <param name="topic"        value="/novatel/gps_fix" type="str" />
+    <param name="topic_ref"    value="/toto/gpsref" type="str" />
+    <param name="invert_pose"  value="false" />
+    <param name="topic_type"   value="NavSatFix" type="str" />
   </node>
 
   <!--<node pkg="rosbag" type="play" name="rosbag" args=" -r 1 &#45;&#45;clock $(find Datasets)/rpg_circle_1/data/circle_1_2014-05-16_11-57-39.bag" />-->
