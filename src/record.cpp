@@ -38,9 +38,11 @@ public:
     Eigen::Vector3d p_;
     Eigen::Vector3d Pp_;
     Eigen::Vector3d Pr_;
+    double stamp_;
+
+    // GPS data
     bool gps_ref_got;
     Eigen::Vector3d gps_ref_;
-    double stamp_;
 
     Recorder(std::string topic_name, std::string filename, bool invert_pose) :
             name(topic_name),
@@ -98,7 +100,7 @@ public:
         write();
     }
 
-    void transformStampedCallback(const geometry_msgs::TransformStampedPtr &msg) {
+    void tfStampedCallback(const geometry_msgs::TransformStampedPtr &msg) {
         q_ = Eigen::Quaterniond(msg->transform.rotation.w, msg->transform.rotation.x,
                                 msg->transform.rotation.y, msg->transform.rotation.z);
         p_ = Eigen::Vector3d(msg->transform.translation.x, msg->transform.translation.y,
@@ -129,6 +131,9 @@ public:
     void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr &msg) {
         // Return if we do not have a reference yet
         if(!gps_ref_got)
+            return;
+        // Check that is a "good" gps measurement
+        if(msg->status.status < sensor_msgs::NavSatStatus::STATUS_GBAS_FIX)
             return;
         // Convert into ENU frame from the Lat, Lon frame
         double xEast, yNorth, zUp;
@@ -191,7 +196,7 @@ int main(int argc, char **argv) {
     } else if (topic_type == std::string("PoseStamped")) {
         sub = nh.subscribe(topic, 10, &Recorder::poseCallback, &recorder);
     } else if (topic_type == std::string("TransformStamped")) {
-        sub = nh.subscribe(topic, 10, &Recorder::transformStampedCallback, &recorder);
+        sub = nh.subscribe(topic, 10, &Recorder::tfStampedCallback, &recorder);
     } else if (topic_type == std::string("tf")) {
         if (topic_ref.empty())
             throw std::runtime_error("no tf reference topic specified.");

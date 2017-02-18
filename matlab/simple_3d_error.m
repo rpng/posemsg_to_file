@@ -22,6 +22,7 @@ inter_gz = interp1(data_g.data(1:skip_num:end,1),data_g.data(1:skip_num:end,4),d
 
 % Create the array
 inter_g = [inter_gx,inter_gy,inter_gz];
+%inter_g = [inter_gz,-inter_gx,inter_gy];
 
 % Subtract out the first timestamp
 % This will give us relative time to the first recorded pose
