@@ -28,13 +28,27 @@ inter_gz = bsxfun(@minus,inter_gz,inter_gz(1,1)-data_e.data(1,4));
 
 % Plot the 3d spacecurve
 figure(1)
-plot3(inter_gx,inter_gy,inter_gz,'-ok'); hold on;
-plot3(data_e.data(1:skip_num:end,2),data_e.data(1:skip_num:end,3),data_e.data(1:skip_num:end,4),'-*b'); hold on;
+set(gcf,'defaultuicontrolfontname','Times');
+set(gcf,'defaultuicontrolfontsize',fontsize);
+set(gcf,'defaultaxesfontname','Times');
+set(gcf,'defaultaxesfontsize',fontsize);
+set(gcf,'defaulttextfontname','Times');
+set(gcf,'defaulttextfontsize',fontsize);
+%plot3(inter_gx,inter_gz,inter_gy,'-ok'); hold on;
+plot3(inter_gx,inter_gy,inter_gz,'--k'); hold on;
+plot3(data_e.data(1:skip_num:end,2),data_e.data(1:skip_num:end,3),data_e.data(1:skip_num:end,4),'-b'); hold on;
+
 
 grid on
 xlabel('x-distance (m)');
 ylabel('y-distance (m)');
 zlabel('z-distance (m)');
-legend('ground truth','estimated path');
-view([35 35])
+%legend('ground truth','estimated path', 'Location','northwest');
+legend('ground truth','estimated path', 'Location','southeast');
+%view([-200 35])
+view([0 90])
 axis equal
+set(gcf,'Position',[0 0 900 600])
+%saveas(gcf,'plot_3d_interpolated.png');
+%print('-dpng','-r900','plot_3d_interpolated.png')
+

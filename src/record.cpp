@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <ros/ros.h>
 #include <sensor_msgs/NavSatFix.h>
+#include <nav_msgs/Odometry.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TransformStamped.h>
@@ -80,6 +81,16 @@ public:
 
         if (++n_msgs_received_ % 50 == 0)
             printf("[%s]: Received %i pose messages\n", name.c_str(), n_msgs_received_);
+    }
+
+    void odomCallback(const nav_msgs::OdometryPtr &msg) {
+        q_ = Eigen::Quaterniond(msg->pose.pose.orientation.w, msg->pose.pose.orientation.x,
+                                msg->pose.pose.orientation.y, msg->pose.pose.orientation.z);
+        p_ = Eigen::Vector3d(msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z);
+        Pp_ = Eigen::Vector3d(msg->pose.covariance.at(0),msg->pose.covariance.at(7),msg->pose.covariance.at(14));
+        Pr_ = Eigen::Vector3d(msg->pose.covariance.at(21),msg->pose.covariance.at(28),msg->pose.covariance.at(35));
+        stamp_ = msg->header.stamp.toSec();
+        write();
     }
 
     void poseCallback(const geometry_msgs::PoseStampedPtr &msg) {
@@ -172,11 +183,24 @@ int main(int argc, char **argv) {
     char buf[16];
     snprintf(buf, 16, "%lu", time(NULL));
 
+    // Random seed
+    // http://stackoverflow.com/a/10270758/7718197
+    // Note ROS starts nodes at the same time, so we need a seed that isn't time based
+    unsigned long long int seed;
+    std::fstream fs;
+    fs.open("/dev/urandom", std::fstream::in);
+    fs.read(reinterpret_cast<char*>(&seed), sizeof(seed));
+    fs.close();
+    srand(seed);
+
+    // Get our random filename
+    int random = rand() % 900 + 100;
+
     // Generate filename
     std::string topic_time(buf);
     std::string topic_name(topic);
     std::replace(topic_name.begin(), topic_name.end(), '/', '_');
-    std::string filename(ros::package::getPath("posemsg_to_file") + "/logs/" + topic_time + topic_name + ".txt");
+    std::string filename(ros::package::getPath("posemsg_to_file") + "/logs/" + topic_time + "_" + std::to_string(random) + topic_name + ".txt");
 
     // Debug
     cout << "Done reading config values" << endl;
@@ -207,6 +231,8 @@ int main(int argc, char **argv) {
         // Sub to the two message topics
         sub = nh.subscribe(topic, 10, &Recorder::gpsCallback, &recorder);
         sub_ref = nh.subscribe(topic_ref, 10, &Recorder::gpsRefCallback, &recorder);
+    } else if(topic_type == std::string("Odometry")) {
+        sub = nh.subscribe(topic, 10, &Recorder::odomCallback, &recorder);
     } else {
         throw std::runtime_error("specified topic_type is not supported.");
     }

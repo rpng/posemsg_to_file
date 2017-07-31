@@ -1,4 +1,4 @@
-% 3D error plot of position wWe  have  presented  an  method  for  the  asynchronous  sensor  fusion  by  applying  measurement  in-ith bounds
+% 3D error plot of position without bounds
 % This script will take a ground truth and estimated path
 % Displays a plot with 3 subplots with the error of
 % Each 3d position compared to the ground truth
@@ -38,17 +38,22 @@ timestamps = bsxfun(@minus,data_e.data(1:skip_num:end,1),data_e.data(1,1));
 % FINALLY, LETS PLOT THESE FIGURES!!!!!!!!!!!!
 % =================================================
 figure('name','position errors')
-yLimits = {sigma_bounds*max(sqrt(data_e.data(1:skip_num:end,9))),max(sigma_bounds*sqrt(data_e.data(1:skip_num:end,10))),max(sigma_bounds*sqrt(data_e.data(1:skip_num:end,11)))};
-yNames = {'x-pos','y-pos','z-pos'};
+yNames = {'x-pos (m)','y-pos (m)','z-pos (m)'};
+set(gcf,'defaultuicontrolfontname','Times');
+set(gcf,'defaultuicontrolfontsize',fontsize);
+set(gcf,'defaultaxesfontname','Times');
+set(gcf,'defaultaxesfontsize',fontsize);
+set(gcf,'defaulttextfontname','Times');
+set(gcf,'defaulttextfontsize',fontsize);
 for i = 1:3
     subplot(3,1,i);
-    plot(timestamps,data_e.data(1:skip_num:end,1+i)-inter_g(:,i),'b'); hold on;
-    plot(timestamps,sigma_bounds*[sqrt(data_e.data(1:skip_num:end,8+i))';-sqrt(data_e.data(1:skip_num:end,8+i))'],'r');
-    ylim([-yLimits{i}-0.25*yLimits{i},yLimits{i}+0.25*yLimits{i}]);
+    plot(timestamps,abs(data_e.data(1:skip_num:end,1+i)-inter_g(:,i)),'r'); hold on;
+    %plot(timestamps,sigma_bounds*[sqrt(data_e.data(1:skip_num:end,8+i))';-sqrt(data_e.data(1:skip_num:end,8+i))'],'r');
+    %ylim([-yLimits{i}-0.25*yLimits{i},yLimits{i}+0.25*yLimits{i}]);
     ylabel(yNames{i});
 end
 xlabel('time (sec)')
-legend('error',[num2str(sigma_bounds),'\sigma error']); %saveas(gcf,'position_errors')
+%legend('error',[num2str(sigma_bounds),'\sigma error']); %saveas(gcf,'position_errors')
 
 
 

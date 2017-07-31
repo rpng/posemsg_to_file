@@ -9,8 +9,8 @@
 
   <!-- Second ground truth -->
   <node pkg="posemsg_to_file" type="posemsg_to_file_node" name="pose2file_ground" clear_params="true" output="screen">
-    <!--<param name="topic"        value="/novatel/gps_fix" type="str" />-->
-    <param name="topic"        value="/kitti_player/oxts/gps" type="str" />
+    <param name="topic"        value="/novatel/gps_fix" type="str" />
+    <!--<param name="topic"        value="/kitti_player/oxts/gps" type="str" />-->
     <param name="topic_ref"    value="/toto/gpsref" type="str" />
     <param name="invert_pose"  value="false" />
     <param name="topic_type"   value="NavSatFix" type="str" />
