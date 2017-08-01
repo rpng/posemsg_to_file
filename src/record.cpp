@@ -144,8 +144,8 @@ public:
         if(!gps_ref_got)
             return;
         // Check that is a "good" gps measurement
-        if(msg->status.status < sensor_msgs::NavSatStatus::STATUS_GBAS_FIX)
-            return;
+        //if(msg->status.status < sensor_msgs::NavSatStatus::STATUS_GBAS_FIX)
+        //    return;
         // Convert into ENU frame from the Lat, Lon frame
         double xEast, yNorth, zUp;
         GPSConversion::GeodeticToEnu(msg->latitude, msg->longitude, msg->altitude, gps_ref_(0), gps_ref_(1), gps_ref_(2), xEast, yNorth, zUp);
