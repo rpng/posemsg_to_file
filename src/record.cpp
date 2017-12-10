@@ -43,12 +43,14 @@ public:
 
     // GPS data
     bool gps_ref_got;
+    bool noref_update_;
     Eigen::Vector3d gps_ref_;
 
-    Recorder(std::string topic_name, std::string filename, bool invert_pose) :
+    Recorder(std::string topic_name, std::string filename, bool invert_pose, bool noref_update) :
             name(topic_name),
             n_msgs_received_(0),
             invert_pose_(invert_pose),
+            noref_update_(noref_update),
             gps_ref_got(false),
             tf_listener_(ros::Duration(100)) {
         // Set defaults to zero
@@ -157,6 +159,11 @@ public:
     }
 
     void gpsRefCallback(const sensor_msgs::NavSatFix::ConstPtr &msg) {
+        // If we do not want to do update and we have already
+        // Gotten our gps reference then just return
+        if(noref_update_ && gps_ref_got)
+            return;
+        // Else update our ref
         gps_ref_ = Eigen::Vector3d(msg->latitude, msg->longitude, msg->altitude);
         gps_ref_got = true;
     }
@@ -177,30 +184,19 @@ int main(int argc, char **argv) {
     nh.getParam("topic_ref", topic_ref);
     bool invert_pose;
     nh.getParam("invert_pose", invert_pose);
+    bool noref_update;
+    nh.getParam("noref_update", noref_update);
 
     // Get current time/date
     // http://stackoverflow.com/a/997803
     char buf[16];
     snprintf(buf, 16, "%lu", time(NULL));
 
-    // Random seed
-    // http://stackoverflow.com/a/10270758/7718197
-    // Note ROS starts nodes at the same time, so we need a seed that isn't time based
-    unsigned long long int seed;
-    std::fstream fs;
-    fs.open("/dev/urandom", std::fstream::in);
-    fs.read(reinterpret_cast<char*>(&seed), sizeof(seed));
-    fs.close();
-    srand(seed);
-
-    // Get our random filename
-    int random = rand() % 900 + 100;
-
     // Generate filename
     std::string topic_time(buf);
     std::string topic_name(topic);
     std::replace(topic_name.begin(), topic_name.end(), '/', '_');
-    std::string filename(ros::package::getPath("posemsg_to_file") + "/logs/" + topic_time + "_" + std::to_string(random) + topic_name + ".txt");
+    std::string filename(ros::package::getPath("posemsg_to_file") + "/logs/" + topic_time + topic_name + ".txt");
 
     // Debug
     cout << "Done reading config values" << endl;
@@ -208,10 +204,11 @@ int main(int argc, char **argv) {
     cout << " - topic_type = " << topic_type << endl;
     cout << " - topic_ref = " << topic_ref << endl;
     cout << " - invert_pose = " << invert_pose << endl;
+    cout << " - noref_update = " << noref_update << endl;
     cout << " - file = " << topic_time+topic_name << ".txt" << endl;
 
     // start recorder
-    Recorder recorder(topic_name, filename, invert_pose);
+    Recorder recorder(topic_name, filename, invert_pose, noref_update);
 
     // subscribe to topic
     ros::Subscriber sub, sub_ref;
@@ -237,13 +234,15 @@ int main(int argc, char **argv) {
         throw std::runtime_error("specified topic_type is not supported.");
     }
 
+    ros::spin();
+
     // spin
-    ros::Rate r(500);
-    while (ros::ok()) {
-        ros::spinOnce();
-        if (topic_type == std::string("tf"))
-            recorder.tfCallback(topic, topic_ref);
-        r.sleep();
-    }
+//    ros::Rate r(500);
+//    while (ros::ok()) {
+//        ros::spinOnce();
+//        if (topic_type == std::string("tf"))
+//            recorder.tfCallback(topic, topic_ref);
+//        r.sleep();
+//    }
     return 0;
 }
